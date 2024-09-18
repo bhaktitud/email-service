@@ -6,3 +6,9 @@ export interface EmailTemplateParams {
     message: string;
     [key: string]: unknown;
 }
+
+
+export interface Email {
+    to: string;
+    data: any;
+}

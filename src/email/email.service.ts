@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import emailjs, { EmailJSResponseStatus } from '@emailjs/nodejs';
 import { EmailTemplateParams } from './email.interface';
+import { MailerService } from '@nestjs-modules/mailer';
+import { EventPayloads } from 'src/event-emitter/event-emitter.interface';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class EmailService {
-    constructor() {
+    constructor(private readonly mailerService: MailerService) {
         emailjs.init({
             publicKey: process.env.EMAIL_JS_PUBLIC_KEY,
             privateKey: process.env.EMAIL_JS_PRIVATE_KEY,
@@ -22,5 +25,21 @@ export class EmailService {
             }
             return false;
         }
+    }
+
+    @OnEvent('user.welcome')
+    async sendGreetingsEmail(data: EventPayloads['user.welcome']) {
+        const { email, name } = data;
+
+        const subject = `Welcome to Company: ${name}`;
+
+        await this.mailerService.sendMail({
+            to: email,
+            subject,
+            template: './greetings',
+            context: {
+                name,
+            },
+        });
     }
 }
